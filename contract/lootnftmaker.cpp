@@ -6,6 +6,7 @@
 
 #include "lootnftmaker.hpp"
 
+/*
 void lootnftmaker::init() {
     require_auth(_self);
 }
@@ -20,3 +21,4 @@ void lootnftmaker::clear() {
 void lootnftmaker::draw() {
     require_auth(_self);
 }
+*/

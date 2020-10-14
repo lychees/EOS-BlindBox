@@ -18,6 +18,7 @@ using eosio::extended_asset;
 using eosio::symbol_code;
 using eosio::permission_level;
 using eosio::action;
+using eosio::name;
 
 namespace NFT {
     

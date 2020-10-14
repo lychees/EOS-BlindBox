@@ -6,10 +6,15 @@
 #pragma once
 #include "NFT.hpp"
 
-CONTRACT lootnftmaker : public contract {
+using eosio::name;
+using eosio::datastream;
+
+class [[eosio::contract("lootnftmaker")]] lootnftmaker : public contract {
 public:
     lootnftmaker( name receiver, name code, datastream<const char*> ds ) :
-    contract( receiver, code, ds ),
+    contract( receiver, code, ds ){}
+
+    /*
     _global(receiver, receiver.value),
     _shovel(receiver, receiver.value),{}
     
@@ -37,10 +42,11 @@ public:
                                       )
         }
     }
+    */
 };
 
 extern "C" {
-    [[noreturn]] void apply(uint64_t receiver, uint64_t code, uint64_t action) {
+    [[noreturn]] void apply(name receiver, name code, uint64_t action) {
         lootnftmaker p( name(receiver), name(code), datastream<const char*>(nullptr, 0) );
         p.apply(receiver, code, action);
         eosio_exit(0);
