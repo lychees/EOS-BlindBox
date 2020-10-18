@@ -209,7 +209,7 @@ private:
     typedef multi_index<"accounts"_n, accounts> accounts_index;
 
     //推荐人表
-    TABLE referer{
+    TABLE referer {
 	    uint64_t id;
 	    name	 acc;
 	    uint64_t primary_key() const { return id; }
@@ -217,7 +217,7 @@ private:
     typedef multi_index<"referers"_n, referer> referers_index;
 
    //盲盒表，支持OWNER索引
-    TABLE box{
+    TABLE box {
 	    uint64_t id;
 	    name owner;
 	    uint64_t primary_key() const { return id; }
@@ -235,11 +235,18 @@ private://业务内容
 
     //买推荐人ID
     void buyref_(const name& acc) {
+        accounts_index accounttable(_self, _self.value);
 	    auto iter = accounttable.find(acc.value);
 	    check(iter == accounttable.end(), "Account doesn't exists");
 
-        paramtable.modify(iter, same_payer, [&]( auto& s ) {
-            s.myid = s.id;
+        referers_index referer(_self, _self.value);
+
+        accounttable.modify(iter, same_payer, [&]( auto& s ) {
+            s.myid = referer.available_primary_key();
+        });
+        referer.emplace( _self, [&]( auto& s ) {
+            s.id = referer.available_primary_key();
+            s.acc = acc;
         });
     }
 
