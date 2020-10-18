@@ -40,54 +40,42 @@ using namespace eosio;
 
 #define max(a,b) (a>b?a:b)
 
-class [[eosio::contract("lootnftcon")]] lootnftcon : public contract
-{
+class [[eosio::contract("lootnftcon")]] lootnftcon : public contract {
 public:
-   using contract::contract;
+    using contract::contract;
 
-     [[eosio::action]]
-    void rmparam( uint64_t id){
-        require_auth( _self );
-
+    [[eosio::action]] void rmparam(uint64_t id) {
+        require_auth(_self);
         sysparam_index paramtable(_self, _self.value);
         paramtable.erase(paramtable.find(id));
     }
 
-    [[eosio::action]]
-        void setparam( uint64_t id, std::string val){
-        require_auth( _self );
-
+    [[eosio::action]] void setparam(uint64_t id, std::string val) {
+        require_auth(_self);
         setparam_(id, val);
     }
 
-    [[eosio::action]]
-    void buyref( const name acc){
+    [[eosio::action]] void buyref(const name acc) {
         require_auth(acc);
-	buyref_(acc);
+	    buyref_(acc);
     }
 
-
 private:
-    double stringtodouble(std::string str)
-	{
+    double stringtodouble(std::string str) {
         double dTmp = 0.0;
         int iLen = str.length();
         int iPos = str.find(".");
         std::string strIntege = str.substr(0,iPos);
         std::string strDecimal = str.substr(iPos + 1,iLen - iPos - 1 );
-        for (int i = 0; i < iPos;i++)
-        {
-        if (strIntege[i] >= '0' && strIntege[i] <= '9')
-        {
-        dTmp = dTmp * 10 + strIntege[i] - '0';
+        for (int i = 0; i < iPos; i++) {
+            if (strIntege[i] >= '0' && strIntege[i] <= '9') {
+                dTmp = dTmp * 10 + strIntege[i] - '0';
+            }
         }
-        }
-        for (int j = 0; j < strDecimal.length(); j++)
-        {
-        if (strDecimal[j] >= '0' && strDecimal[j] <= '9')
-        {
-        dTmp += (strDecimal[j] - '0') * pow(10.0,(0 - j - 1));
-        }
+        for (int j = 0; j < strDecimal.length(); j++) {
+            if (strDecimal[j] >= '0' && strDecimal[j] <= '9') {
+                dTmp += (strDecimal[j] - '0') * pow(10.0,(0 - j - 1));
+            }
         }
         return dTmp;
 	}
@@ -161,8 +149,8 @@ private:
     inline void transfer_asset(
         const name to,
         const eosio::asset& amount,
-        const std::string& memo)
-    {
+        const std::string& memo) {
+        require_auth_admin();
         action(permission_level{_self, "active"_n}, "eosio.token"_n, "transfer"_n, std::make_tuple(_self, to, amount, memo)).send();
     }
 
@@ -171,35 +159,30 @@ private:
         const uint64_t& tokenid,
         const name nftcontract,
         const name to,
-        const std::string& memo)
-    {
+        const std::string& memo) {
 	    action(permission_level{_self, "active"_n}, nftcontract, "transfer"_n, std::make_tuple(tokenid, to, memo)).send();
     }
 
-    
 
 private:
-   TABLE sysparam{
-	uint64_t	id;
-	std::string	val;
-
-	uint64_t primary_key() const { return id; }
-   };
+    TABLE sysparam {
+	    uint64_t id;
+	    std::string	val;
+	    uint64_t primary_key() const { return id; }
+    };
    typedef multi_index<"sysparams"_n, sysparam> sysparam_index;
 
-
-   TABLE log{
-      uint64_t  id;
-      name	from;
-      uint64_t	acttime;
-      std::string memo;
-
-      uint64_t primary_key() const { return id; }
-   };
-   typedef multi_index<"log"_n, log> log_index;
+    TABLE log {
+        uint64_t  id;
+        name	from;
+        uint64_t	acttime;
+        std::string memo;
+        uint64_t primary_key() const { return id; }
+    };
+    typedef multi_index<"log"_n, log> log_index;
 
    
-    TABLE contracthead{
+    TABLE contracthead {
         uint64_t id;
         uint64_t usercount;
         uint64_t primary_key() const { return id; }
@@ -216,30 +199,30 @@ private:
    };
    typedef multi_index<"contracthead"_n, contracthead> contracthead_index;
 
-   //用户表
-   TABLE accounts{
-	name acc;
-	uint64_t refid;
-	uint64_t myid;
-	uint64_t primary_key() const { return acc.value; }
-   };
-   typedef multi_index<"accounts"_n, accounts> accounts_index;
+    //用户表
+    TABLE accounts {
+        name acc;
+	    uint64_t refid;
+	    uint64_t myid;
+	    uint64_t primary_key() const { return acc.value; }
+    };
+    typedef multi_index<"accounts"_n, accounts> accounts_index;
 
-   //推荐人表
-   TABLE referer{
-	uint64_t id;
-	name	 acc;
-	uint64_t primary_key() const { return id; }
-   };
-   typedef multi_index<"referers"_n, referer> referers_index;
+    //推荐人表
+    TABLE referer{
+	    uint64_t id;
+	    name	 acc;
+	    uint64_t primary_key() const { return id; }
+    };
+    typedef multi_index<"referers"_n, referer> referers_index;
 
    //盲盒表，支持OWNER索引
-   TABLE box{
-	uint64_t id;
-	name owner;
-	uint64_t primary_key() const { return id; }
-	uint64_t get_secondary_1() const { return owner.value;}
-   };
+    TABLE box{
+	    uint64_t id;
+	    name owner;
+	    uint64_t primary_key() const { return id; }
+	    uint64_t get_secondary_1() const { return owner.value;}
+    };
    typedef multi_index<"boxs"_n, box, indexed_by<"byowner"_n, const_mem_fun<box, uint64_t, &box::get_secondary_1>> > box_index;
 
 private:
@@ -252,6 +235,12 @@ private://业务内容
 
     //买推荐人ID
     void buyref_(const name& acc) {
+	    auto iter = accounttable.find(acc.value);
+	    check(iter == accounttable.end(), "Account doesn't exists");
+
+        paramtable.modify(iter, same_payer, [&]( auto& s ) {
+            s.myid = s.id;
+        });
     }
 
     //开盒
@@ -263,29 +252,28 @@ private://业务内容
     }
 
 private:
-    void adduser(const name& acc, uint64_t refid){
+    void adduser(const name& acc, uint64_t refid) {
         contracthead_index contracthead(_self, _self.value);
         auto citer = contracthead.find(CONTRACT_HEAD_ID);
 
         check(citer != contracthead.end(), "contract not init");
 
         contracthead.modify(citer, _self, [&](auto& p) {
-                p.adduser();
+            p.adduser();
         }); 
 
-	accounts_index accounttable(_self, _self.value);
-	auto iter = accounttable.find(acc.value);
-	check(iter != accounttable.end(), "acc is exisit");
+	    accounts_index accounttable(_self, _self.value);
+	    auto iter = accounttable.find(acc.value);
+	    check(iter != accounttable.end(), "Account already exists");
 
-	accounttable.emplace( _self, [&]( auto& s ) {
-                s.acc = acc;
-                s.refid = refid;
-		s.myid = 0;
+	    accounttable.emplace( _self, [&]( auto& s ) {
+            s.acc = acc;
+            s.refid = refid;
+		    s.myid = 0;
         });
 
-	std::string memo = "";
-	memo += "join-" + std::to_string(refid);
-	log(acc, memo);
+	    std::string memo = "";
+	    memo += "join-" + std::to_string(refid);
+	    log(acc, memo);
     }
-
 };
